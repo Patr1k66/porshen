@@ -4,7 +4,7 @@ const FORM_CONFIG = {
   // 2. Вставьте ключ в accessKey ниже
   // 3. Укажите email получателя в панели Web3Forms
   endpoint: 'https://api.web3forms.com/submit',
-  accessKey: '',
+  accessKey: '04442abe-0893-48f5-8658-e2533ddbfbfc',
   method: 'POST',
   subject: 'Новая заявка — ПОРШЕНЬ',
   headers: {
