@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" fill="none">
+  <defs>
+    <linearGradient id="oilGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#ff6b00" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ffb347" stop-opacity="0.7"/>
+    </linearGradient>
+  </defs>
+
+  <ellipse cx="32" cy="12" rx="22" ry="8" fill="#ff6b00" opacity="0.8"/>
+  <rect x="10" y="12" width="44" height="56" rx="4" fill="#9ca3b0" opacity="0.85"/>
+  <ellipse cx="32" cy="68" rx="22" ry="8" fill="#9ca3b0" opacity="0.65"/>
+  <rect x="24" y="4" width="16" height="6" rx="2" fill="#ff6b00" opacity="0.95"/>
+
+  <!-- oil level rising -->
+  <rect x="14" y="60" width="36" height="0" rx="2" fill="url(#oilGrad)">
+    <animate attributeName="y" values="60;28;60" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1; 0.4 0 0.6 1" keyTimes="0; 0.45; 1"/>
+    <animate attributeName="height" values="0;32;0" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1; 0.4 0 0.6 1" keyTimes="0; 0.45; 1"/>
+  </rect>
+
+  <!-- flow lines -->
+  <line x1="18" y1="24" x2="18" y2="60" stroke="#ff6b00" stroke-width="1.5" opacity="0.3" stroke-dasharray="3 5">
+    <animate attributeName="stroke-dashoffset" values="0;-16" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <line x1="32" y1="24" x2="32" y2="60" stroke="#ff6b00" stroke-width="1.5" opacity="0.3" stroke-dasharray="3 5">
+    <animate attributeName="stroke-dashoffset" values="0;-16" dur="1.2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="1.2s" repeatCount="indefinite"/>
+  </line>
+  <line x1="46" y1="24" x2="46" y2="60" stroke="#ff6b00" stroke-width="1.5" opacity="0.3" stroke-dasharray="3 5">
+    <animate attributeName="stroke-dashoffset" values="0;-16" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="1.8s" repeatCount="indefinite"/>
+  </line>
+
+  <!-- drip -->
+  <circle cx="32" cy="72" r="2" fill="#ffb347" opacity="0">
+    <animate attributeName="cy" values="68;76;68" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0.9;0" dur="2s" repeatCount="indefinite"/>
+  </circle>
+</svg>

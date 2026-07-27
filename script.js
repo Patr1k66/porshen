@@ -28,6 +28,93 @@ function initHeader() {
   onScroll();
 }
 
+function initHeaderPhone() {
+  const link = document.getElementById('header-phone');
+  if (!link || typeof CONTACTS === 'undefined') return;
+
+  link.href = CONTACTS.phoneHref;
+  link.textContent = CONTACTS.phone;
+}
+
+function initActiveNav() {
+  const sections = [...document.querySelectorAll('main section[id]')];
+  const links = [...document.querySelectorAll('.site-nav__link')];
+  if (!sections.length || !links.length) return;
+
+  const linkById = Object.fromEntries(
+    links.map((link) => [link.getAttribute('href')?.replace('#', ''), link])
+  );
+
+  const setActive = () => {
+    const offset = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height'), 10) || 72;
+    const scrollPos = window.scrollY + offset + 80;
+    let currentId = sections[0].id;
+
+    sections.forEach((section) => {
+      if (section.offsetTop <= scrollPos) currentId = section.id;
+    });
+
+    links.forEach((link) => link.classList.remove('site-nav__link--active'));
+    linkById[currentId]?.classList.add('site-nav__link--active');
+  };
+
+  window.addEventListener('scroll', setActive, { passive: true });
+  setActive();
+}
+
+function initScrollTop() {
+  const button = document.getElementById('scroll-top');
+  if (!button) return;
+
+  const showAfter = 400;
+  let isScrolling = false;
+
+  const toggle = () => {
+    if (isScrolling) return;
+    const visible = window.scrollY > showAfter;
+    button.classList.toggle('scroll-top--visible', visible);
+    button.hidden = !visible;
+  };
+
+  const scrollToTop = () => {
+    if (isScrolling || window.scrollY <= 0) return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) {
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    isScrolling = true;
+    button.disabled = true;
+
+    const startY = window.scrollY;
+    const duration = Math.min(1000, Math.max(500, startY * 0.5));
+    const startTime = performance.now();
+
+    const step = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - (1 - progress) ** 3;
+      window.scrollTo(0, Math.round(startY * (1 - eased)));
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        window.scrollTo(0, 0);
+        isScrolling = false;
+        button.disabled = false;
+        toggle();
+      }
+    };
+
+    requestAnimationFrame(step);
+  };
+
+  button.addEventListener('click', scrollToTop);
+  window.addEventListener('scroll', toggle, { passive: true });
+  toggle();
+}
+
 // ── Mobile menu ────────────────────────────────────────────────────────────
 
 function initMobileMenu() {
@@ -98,15 +185,28 @@ function initScrollAnimations() {
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('animate-in');
+          const delay = entry.target.dataset.delay || 0;
+          setTimeout(() => {
+            entry.target.classList.add('animate-in');
+          }, Number(delay));
           observer.unobserve(entry.target);
         }
       });
     },
-    { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    { threshold: 0.12, rootMargin: '0px 0px -30px 0px' }
   );
 
-  elements.forEach((el) => observer.observe(el));
+  elements.forEach((el) => {
+    if (!el.dataset.delay) {
+      const parent = el.parentElement;
+      const siblings = parent
+        ? [...parent.children].filter((c) => c.classList.contains('animate-on-scroll'))
+        : [el];
+      const idx = siblings.indexOf(el);
+      el.dataset.delay = String(Math.max(idx, 0) * 90);
+    }
+    observer.observe(el);
+  });
 }
 
 // ── Price list ─────────────────────────────────────────────────────────────
@@ -449,6 +549,91 @@ function initFooter() {
   }
 }
 
+// ── Background parts — layered motion ──────────────────────────────────────
+
+function pauseSvgAnimations(root) {
+  root.querySelectorAll('animate, animateTransform').forEach((node) => {
+    node.endElement();
+  });
+}
+
+function initBgPartsMotion() {
+  const bgParts = document.querySelector('.bg-parts');
+  if (!bgParts) return;
+
+  const parts = [...bgParts.querySelectorAll('.bg-part')];
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (prefersReduced.matches) {
+    parts.forEach((part) => {
+      const obj = part.querySelector('object');
+      if (!obj) return;
+      const pause = () => {
+        const doc = obj.contentDocument;
+        if (doc) pauseSvgAnimations(doc);
+      };
+      obj.addEventListener('load', pause);
+      if (obj.contentDocument) pause();
+    });
+    return;
+  }
+
+  prefersReduced.addEventListener('change', (e) => {
+    if (e.matches) {
+      parts.forEach((part) => {
+        const doc = part.querySelector('object')?.contentDocument;
+        if (doc) pauseSvgAnimations(doc);
+      });
+    } else {
+      parts.forEach((part) => {
+        const obj = part.querySelector('object');
+        if (obj) {
+          const src = obj.getAttribute('data');
+          obj.setAttribute('data', '');
+          obj.setAttribute('data', src);
+        }
+      });
+    }
+  });
+
+  let scrollY = 0;
+  let mouseX = 0.5;
+  let mouseY = 0.5;
+  let ticking = false;
+
+  const update = () => {
+    parts.forEach((part) => {
+      const depth = Number(part.dataset.depth) || 0.15;
+      const scrollOffset = scrollY * depth * 0.6;
+      const mx = (mouseX - 0.5) * depth * 40;
+      const my = (mouseY - 0.5) * depth * 40;
+      part.style.transform = `translate3d(${mx}px, ${scrollOffset + my}px, 0)`;
+    });
+    ticking = false;
+  };
+
+  window.addEventListener('scroll', () => {
+    scrollY = window.scrollY;
+    if (!ticking) {
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive: true });
+
+  if (window.matchMedia('(pointer: fine)').matches) {
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX / window.innerWidth;
+      mouseY = e.clientY / window.innerHeight;
+      if (!ticking) {
+        requestAnimationFrame(update);
+        ticking = true;
+      }
+    }, { passive: true });
+  }
+
+  update();
+}
+
 // ── App init ───────────────────────────────────────────────────────────────
 
 function initApp() {
@@ -456,9 +641,13 @@ function initApp() {
   window.__porshenInitialized = true;
 
   initHeader();
+  initHeaderPhone();
+  initActiveNav();
   initMobileMenu();
   initSmoothScroll();
   initScrollAnimations();
+  initScrollTop();
+  initBgPartsMotion();
   renderPriceList();
   initGallery();
   initBookingForm();

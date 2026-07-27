@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 96" fill="none">
+  <defs>
+    <linearGradient id="gearGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffb347"/>
+      <stop offset="100%" stop-color="#ff6b00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- large gear -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" from="0 38 48" to="360 38 48" dur="4s" repeatCount="indefinite"/>
+    <circle cx="38" cy="48" r="14" fill="#9ca3b0" opacity="0.9"/>
+    <path d="M38 26 L42 26 L44 34 L52 32 L56 38 L50 44 L52 52 L44 50 L42 58 L38 58 L34 58 L32 50 L24 52 L26 44 L20 38 L24 32 L32 34 L34 26 Z" fill="url(#gearGrad)" opacity="0.85"/>
+    <circle cx="38" cy="48" r="5" fill="#1a1d27"/>
+  </g>
+
+  <!-- small gear -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" from="0 82 48" to="-360 82 48" dur="2.6s" repeatCount="indefinite"/>
+    <circle cx="82" cy="48" r="10" fill="#9ca3b0" opacity="0.85"/>
+    <path d="M82 32 L85 32 L86.5 38 L92 37 L94 41 L90 45 L91 51 L86.5 49.5 L85 55 L82 55 L79 55 L77.5 49.5 L73 51 L74 45 L70 41 L72 37 L77.5 38 L79 32 Z" fill="url(#gearGrad)" opacity="0.8"/>
+    <circle cx="82" cy="48" r="3.5" fill="#1a1d27"/>
+  </g>
+</svg>

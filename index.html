@@ -22,10 +22,34 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
+
+  <div class="bg-parts" aria-hidden="true">
+    <div class="bg-glow bg-glow--1"></div>
+    <div class="bg-glow bg-glow--2"></div>
+    <div class="bg-glow bg-glow--3"></div>
+    <div class="bg-part bg-part--piston" data-depth="0.18">
+      <object data="assets/parts/piston.svg?v=4" type="image/svg+xml" aria-hidden="true"></object>
+    </div>
+    <div class="bg-part bg-part--gear" data-depth="0.12">
+      <object data="assets/parts/gear.svg?v=4" type="image/svg+xml" aria-hidden="true"></object>
+    </div>
+    <div class="bg-part bg-part--wrench" data-depth="0.22">
+      <object data="assets/parts/wrench.svg?v=4" type="image/svg+xml" aria-hidden="true"></object>
+    </div>
+    <div class="bg-part bg-part--brake-disc" data-depth="0.15">
+      <object data="assets/parts/brake-disc.svg?v=4" type="image/svg+xml" aria-hidden="true"></object>
+    </div>
+    <div class="bg-part bg-part--spark-plug" data-depth="0.25">
+      <object data="assets/parts/spark-plug.svg?v=4" type="image/svg+xml" aria-hidden="true"></object>
+    </div>
+    <div class="bg-part bg-part--oil-filter" data-depth="0.2">
+      <object data="assets/parts/oil-filter.svg?v=4" type="image/svg+xml" aria-hidden="true"></object>
+    </div>
+  </div>
 
   <header class="site-header" id="top">
     <div class="container site-header__inner">
@@ -41,6 +65,7 @@
       </nav>
 
       <a href="#contacts" class="btn btn--primary btn--sm site-header__cta">Записаться</a>
+      <a href="#" class="site-header__phone" id="header-phone" aria-label="Позвонить в автосервис"></a>
 
       <button class="burger" type="button" aria-label="Открыть меню" aria-expanded="false">
         <span class="burger__line"></span>
@@ -57,7 +82,7 @@
       <div class="container hero__inner">
         <div class="hero__content">
           <p class="hero__eyebrow">Автосервис с 2010 года</p>
-          <h1 id="hero-title" class="hero__title">Надёжный сервис<br>для вашего автомобиля</h1>
+          <h1 id="hero-title" class="hero__title">Надёжный сервис<br>для <span class="hero__highlight">вашего<br>автомобиля</span></h1>
           <p class="hero__subtitle">Более 15 лет опыта в диагностике и ремонте. Честные цены, гарантия на работы и запчасти.</p>
           <div class="hero__actions">
             <a href="#contacts" class="btn btn--primary">Записаться на сервис</a>
@@ -133,7 +158,7 @@
           <p class="section-header__subtitle">Современное оборудование, чистые боксы и команда профессионалов</p>
         </header>
 
-        <div class="gallery" id="gallery" aria-roledescription="carousel" aria-label="Фотографии мастерской" tabindex="0">
+        <div class="gallery animate-on-scroll animate-on-scroll--scale" id="gallery" aria-roledescription="carousel" aria-label="Фотографии мастерской" tabindex="0">
           <div class="gallery__viewport">
             <ul class="gallery__track" id="gallery-track">
               <li class="gallery__slide" data-caption="Профессиональные подъёмники для любых работ">
@@ -240,7 +265,7 @@
           <p class="section-header__subtitle">Ориентировочные цены на основные виды работ</p>
         </header>
 
-        <div class="price-list animate-on-scroll" id="price-list" role="table" aria-label="Прайс-лист услуг"></div>
+        <div class="price-list animate-on-scroll animate-on-scroll--scale" id="price-list" role="table" aria-label="Прайс-лист услуг"></div>
         <p class="price-list__note">* Цены ориентировочные. Точная стоимость — после диагностики.</p>
       </div>
     </section>
@@ -274,6 +299,12 @@
           </div>
 
           <button type="submit" class="btn btn--primary btn--full" id="booking-submit">Отправить заявку</button>
+
+          <ul class="booking-form__trust" aria-label="Преимущества записи">
+            <li>Ответ за 15 минут</li>
+            <li>Без предоплаты</li>
+            <li>Гарантия на работы</li>
+          </ul>
 
           <p class="booking-form__consent">
             Нажимая кнопку, вы соглашаетесь на
@@ -316,11 +347,17 @@
     </div>
   </footer>
 
+  <button class="scroll-top" type="button" id="scroll-top" aria-label="Прокрутить наверх" hidden>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  </button>
+
   <script src="data/prices.js?v=5" defer></script>
   <script src="data/gallery.js?v=5" defer></script>
   <script src="data/form-config.js?v=5" defer></script>
   <script src="data/contacts.js?v=5" defer></script>
-  <script src="script.js?v=5" defer></script>
+  <script src="script.js?v=14" defer></script>
   <script
     src="widget.js?v=1"
     data-bot-id="client-1"
