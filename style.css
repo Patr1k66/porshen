@@ -289,8 +289,8 @@ h1, h2 {
   z-index: 100;
   height: var(--header-height);
   background: rgba(10, 12, 16, 0.78);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 107, 0, 0.2);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 107, 0, 0.15);
   transition: background var(--transition-base), box-shadow var(--transition-base);
@@ -1519,14 +1519,13 @@ h1, h2 {
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
-  transition: transform 0.1s linear;
+  contain: strict;
 }
 
 .bg-glow {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.5;
+  opacity: 0.55;
 }
 
 .bg-glow--1 {
@@ -1536,8 +1535,8 @@ h1, h2 {
   height: 50vw;
   max-width: 600px;
   max-height: 600px;
-  background: rgba(255, 107, 0, 0.35);
-  animation: orbPulse 8s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(255, 107, 0, 0.32) 0%, rgba(255, 107, 0, 0.1) 45%, transparent 70%);
+  animation: orbPulse 10s ease-in-out infinite;
 }
 
 .bg-glow--2 {
@@ -1547,9 +1546,9 @@ h1, h2 {
   height: 45vw;
   max-width: 500px;
   max-height: 500px;
-  background: rgba(255, 140, 0, 0.25);
-  animation: orbPulse 10s ease-in-out infinite reverse;
-  animation-delay: -3s;
+  background: radial-gradient(circle, rgba(255, 140, 0, 0.22) 0%, rgba(255, 140, 0, 0.08) 45%, transparent 70%);
+  animation: orbPulse 12s ease-in-out infinite reverse;
+  animation-delay: -4s;
 }
 
 .bg-glow--3 {
@@ -1559,72 +1558,71 @@ h1, h2 {
   height: 30vw;
   max-width: 350px;
   max-height: 350px;
-  background: rgba(255, 69, 0, 0.15);
-  animation: orbPulse 12s ease-in-out infinite;
-  animation-delay: -6s;
+  background: radial-gradient(circle, rgba(255, 69, 0, 0.14) 0%, rgba(255, 69, 0, 0.05) 45%, transparent 70%);
+  animation: orbPulse 14s ease-in-out infinite;
+  animation-delay: -7s;
 }
 
 .bg-part {
   position: absolute;
   opacity: 0.16;
-  filter: drop-shadow(0 0 20px rgba(255, 107, 0, 0.25));
   user-select: none;
-  transition: transform 0.15s ease-out;
+  animation: bgFloat 16s ease-in-out infinite;
+  will-change: auto;
 }
 
-.bg-part object {
+.bg-part img {
   display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
   pointer-events: none;
-}
-
-@media (min-width: 768px) {
-  .bg-part {
-    will-change: transform;
-  }
 }
 
 .bg-part--piston {
   top: 8%;
   right: 5%;
   width: clamp(80px, 10vw, 130px);
-  height: clamp(120px, 15vw, 195px);
+  animation-duration: 18s;
 }
 
 .bg-part--gear {
   top: 55%;
   left: 3%;
   width: clamp(100px, 13vw, 160px);
-  height: clamp(80px, 10vw, 128px);
+  animation-duration: 22s;
+  animation-delay: -6s;
 }
 
 .bg-part--wrench {
   top: 38%;
   left: 4%;
   width: clamp(90px, 11vw, 140px);
-  height: clamp(90px, 11vw, 140px);
+  animation-duration: 20s;
+  animation-delay: -10s;
 }
 
 .bg-part--oil-filter {
   top: 6%;
   left: 58%;
   width: clamp(80px, 10vw, 120px);
-  height: clamp(100px, 12vw, 150px);
+  animation-duration: 19s;
+  animation-delay: -3s;
 }
 
 .bg-part--brake-disc {
   bottom: 15%;
   right: 8%;
   width: clamp(110px, 14vw, 170px);
-  height: clamp(110px, 14vw, 170px);
+  animation-duration: 24s;
+  animation-delay: -12s;
 }
 
 .bg-part--spark-plug {
   top: 70%;
   right: 18%;
   width: clamp(55px, 7vw, 90px);
-  height: clamp(110px, 14vw, 180px);
+  animation-duration: 17s;
+  animation-delay: -8s;
 }
 
 .bg-parts--legal .bg-part--piston {
@@ -1689,6 +1687,15 @@ h1, h2 {
 /* ==========================================================================
    7. Animations & reduced motion
    ========================================================================== */
+
+@keyframes bgFloat {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -14px, 0);
+  }
+}
 
 @keyframes fadeUp {
   from {
@@ -1826,7 +1833,140 @@ h1, h2 {
 
 @keyframes linePulse {
   0%, 100% { width: 64px; opacity: 1; }
-  50% { width: 80px; opacity: 0.85; }
+  50% { width: 72px; opacity: 0.9; }
+}
+
+/* ── Performance: mobile, touch, weak devices ─────────────────────────── */
+
+@media (max-width: 1024px), (hover: none) {
+  .site-header {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(10, 12, 16, 0.96);
+  }
+
+  .advantage-card,
+  .service-card,
+  .booking-form,
+  .scroll-top {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .hero::before,
+  .hero::after {
+    animation: none;
+  }
+
+  .hero__eyebrow {
+    animation: fadeUp 0.6s var(--ease-out) both;
+  }
+
+  .hero__highlight {
+    animation: none;
+    background-position: 0 center;
+  }
+
+  .hero__media {
+    animation: fadeUp 0.6s var(--ease-out) 0.4s both;
+  }
+
+  .btn--primary {
+    animation: none;
+  }
+
+  .btn--primary::after {
+    animation: none;
+    display: none;
+  }
+
+  .site-header__phone::before {
+    animation: none;
+  }
+
+  .section-header__title::after {
+    animation: none;
+  }
+
+  .bg-glow {
+    animation: none;
+    opacity: 0.45;
+  }
+
+  .bg-glow--2,
+  .bg-glow--3 {
+    display: none;
+  }
+
+  .bg-part {
+    animation: none;
+  }
+
+  .hero__title,
+  .hero__highlight,
+  .logo {
+    filter: none;
+  }
+}
+
+html.perf-lite .site-header {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(10, 12, 16, 0.96);
+}
+
+html.perf-lite .advantage-card,
+html.perf-lite .service-card,
+html.perf-lite .booking-form,
+html.perf-lite .scroll-top {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.perf-lite .hero::before,
+html.perf-lite .hero::after,
+html.perf-lite .hero__eyebrow,
+html.perf-lite .hero__highlight,
+html.perf-lite .hero__media,
+html.perf-lite .btn--primary,
+html.perf-lite .btn--primary::after,
+html.perf-lite .site-header__phone::before,
+html.perf-lite .section-header__title::after,
+html.perf-lite .bg-glow,
+html.perf-lite .bg-part {
+  animation: none !important;
+}
+
+html.perf-lite .btn--primary::after {
+  display: none;
+}
+
+html.perf-lite .hero__highlight {
+  background-position: 0 center;
+}
+
+html.perf-lite .bg-glow {
+  opacity: 0.4;
+}
+
+html.perf-lite .bg-glow--2,
+html.perf-lite .bg-glow--3 {
+  display: none;
+}
+
+html.perf-lite .hero__title,
+html.perf-lite .hero__highlight,
+html.perf-lite .logo {
+  filter: none;
+}
+
+html.is-tab-hidden .bg-part,
+html.is-tab-hidden .bg-glow,
+html.is-tab-hidden .hero::before,
+html.is-tab-hidden .hero::after,
+html.is-tab-hidden .btn--primary,
+html.is-tab-hidden .btn--primary::after {
+  animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1859,6 +1999,10 @@ h1, h2 {
     animation: none !important;
     opacity: 0.1;
     transform: none !important;
+  }
+
+  .bg-part img {
+    display: block;
   }
 
   .bg-glow {

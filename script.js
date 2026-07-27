@@ -549,89 +549,29 @@ function initFooter() {
   }
 }
 
-// ── Background parts — layered motion ──────────────────────────────────────
+// ── Performance — lite mode for weaker devices ───────────────────────────
 
-function pauseSvgAnimations(root) {
-  root.querySelectorAll('animate, animateTransform').forEach((node) => {
-    node.endElement();
-  });
-}
+function initPerformanceMode() {
+  const root = document.documentElement;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const coarsePointer = window.matchMedia('(hover: none), (pointer: coarse)');
+  const smallScreen = window.matchMedia('(max-width: 767px)');
+  const lowCpu = navigator.hardwareConcurrency > 0 && navigator.hardwareConcurrency <= 4;
+  const lowMemory = navigator.deviceMemory > 0 && navigator.deviceMemory <= 4;
 
-function initBgPartsMotion() {
-  const bgParts = document.querySelector('.bg-parts');
-  if (!bgParts) return;
-
-  const parts = [...bgParts.querySelectorAll('.bg-part')];
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-  if (prefersReduced.matches) {
-    parts.forEach((part) => {
-      const obj = part.querySelector('object');
-      if (!obj) return;
-      const pause = () => {
-        const doc = obj.contentDocument;
-        if (doc) pauseSvgAnimations(doc);
-      };
-      obj.addEventListener('load', pause);
-      if (obj.contentDocument) pause();
-    });
-    return;
-  }
-
-  prefersReduced.addEventListener('change', (e) => {
-    if (e.matches) {
-      parts.forEach((part) => {
-        const doc = part.querySelector('object')?.contentDocument;
-        if (doc) pauseSvgAnimations(doc);
-      });
-    } else {
-      parts.forEach((part) => {
-        const obj = part.querySelector('object');
-        if (obj) {
-          const src = obj.getAttribute('data');
-          obj.setAttribute('data', '');
-          obj.setAttribute('data', src);
-        }
-      });
-    }
-  });
-
-  let scrollY = 0;
-  let mouseX = 0.5;
-  let mouseY = 0.5;
-  let ticking = false;
-
-  const update = () => {
-    parts.forEach((part) => {
-      const depth = Number(part.dataset.depth) || 0.15;
-      const scrollOffset = scrollY * depth * 0.6;
-      const mx = (mouseX - 0.5) * depth * 40;
-      const my = (mouseY - 0.5) * depth * 40;
-      part.style.transform = `translate3d(${mx}px, ${scrollOffset + my}px, 0)`;
-    });
-    ticking = false;
+  const applyLite = () => {
+    const lite = reducedMotion.matches || coarsePointer.matches || smallScreen.matches || lowCpu || lowMemory;
+    root.classList.toggle('perf-lite', lite);
   };
 
-  window.addEventListener('scroll', () => {
-    scrollY = window.scrollY;
-    if (!ticking) {
-      requestAnimationFrame(update);
-      ticking = true;
-    }
-  }, { passive: true });
+  applyLite();
+  [reducedMotion, coarsePointer, smallScreen].forEach((mq) => {
+    mq.addEventListener('change', applyLite);
+  });
 
-  if (window.matchMedia('(pointer: fine)').matches) {
-    window.addEventListener('mousemove', (e) => {
-      mouseX = e.clientX / window.innerWidth;
-      mouseY = e.clientY / window.innerHeight;
-      if (!ticking) {
-        requestAnimationFrame(update);
-        ticking = true;
-      }
-    }, { passive: true });
-  }
-
-  update();
+  document.addEventListener('visibilitychange', () => {
+    root.classList.toggle('is-tab-hidden', document.hidden);
+  });
 }
 
 // ── App init ───────────────────────────────────────────────────────────────
@@ -647,7 +587,7 @@ function initApp() {
   initSmoothScroll();
   initScrollAnimations();
   initScrollTop();
-  initBgPartsMotion();
+  initPerformanceMode();
   renderPriceList();
   initGallery();
   initBookingForm();
