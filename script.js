@@ -21,13 +21,17 @@ function initScrollManager() {
   }, { passive: true });
 }
 
-// ── Performance mode ───────────────────────────────────────────────────────
+// ── Performance mode & FX toggle ───────────────────────────────────────────
 
-let perfLite = true;
+const FX_STORAGE_KEY = 'porshen-fx';
+
+let perfLite = false;
 let perfReadyResolve;
 const perfReady = new Promise((resolve) => {
   perfReadyResolve = resolve;
 });
+
+let scrollAnimObserver = null;
 
 function isPerfLite() {
   return perfLite;
@@ -39,33 +43,56 @@ function setPerfMode(lite) {
   document.documentElement.classList.toggle('perf-full', !lite);
 }
 
+function getFxEnabled() {
+  try {
+    const saved = localStorage.getItem(FX_STORAGE_KEY);
+    if (saved === 'off') return false;
+    if (saved === 'on') return true;
+  } catch (e) {
+    /* ignore */
+  }
+  return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function updateFxToggle(enabled) {
+  const btn = document.getElementById('fx-toggle');
+  if (!btn) return;
+
+  btn.setAttribute('aria-pressed', String(enabled));
+  btn.setAttribute('aria-label', enabled ? 'Анимации включены' : 'Анимации выключены');
+  btn.title = enabled ? 'Выключить анимации' : 'Включить анимации';
+}
+
+function applyFxMode(enabled) {
+  setPerfMode(!enabled);
+
+  try {
+    localStorage.setItem(FX_STORAGE_KEY, enabled ? 'on' : 'off');
+  } catch (e) {
+    /* ignore */
+  }
+
+  updateFxToggle(enabled);
+  refreshScrollAnimations();
+}
+
+function initFxToggle() {
+  const btn = document.getElementById('fx-toggle');
+  if (!btn) return;
+
+  updateFxToggle(!isPerfLite());
+
+  btn.addEventListener('click', () => {
+    applyFxMode(isPerfLite());
+  });
+}
+
 function initPerformanceMode() {
   const root = document.documentElement;
-  setPerfMode(true);
+  setPerfMode(!getFxEnabled());
+  perfReadyResolve();
 
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const coarsePointer = window.matchMedia('(hover: none), (pointer: coarse)');
-
-  const hardwareOk = () => {
-    if (reducedMotion.matches || coarsePointer.matches) return false;
-    if (navigator.connection?.saveData) return false;
-
-    const cores = navigator.hardwareConcurrency || 0;
-    const mem = navigator.deviceMemory || 0;
-    if (cores >= 8) return mem === 0 || mem >= 6;
-    if (cores >= 6 && mem >= 8) return true;
-    return false;
-  };
-
-  const evaluate = () => {
-    setPerfMode(!hardwareOk());
-    perfReadyResolve();
-  };
-
-  evaluate();
-  [reducedMotion, coarsePointer].forEach((mq) => {
-    mq.addEventListener('change', evaluate);
-  });
+  initFxToggle();
 
   document.addEventListener('visibilitychange', () => {
     root.classList.toggle('is-tab-hidden', document.hidden);
@@ -275,16 +302,30 @@ function initSmoothScroll() {
 
 // ── Scroll animations ──────────────────────────────────────────────────────
 
+function refreshScrollAnimations() {
+  document.querySelectorAll('.animate-on-scroll').forEach((el) => {
+    el.classList.remove('animate-in');
+  });
+  initScrollAnimations();
+}
+
 function initScrollAnimations() {
   const elements = document.querySelectorAll('.animate-on-scroll');
   if (!elements.length) return;
+
+  if (scrollAnimObserver) {
+    scrollAnimObserver.disconnect();
+    scrollAnimObserver = null;
+  }
 
   if (isPerfLite()) {
     elements.forEach((el) => el.classList.add('animate-in'));
     return;
   }
 
-  const observer = new IntersectionObserver(
+  elements.forEach((el) => el.classList.remove('animate-in'));
+
+  scrollAnimObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -292,7 +333,7 @@ function initScrollAnimations() {
           setTimeout(() => {
             entry.target.classList.add('animate-in');
           }, Number(delay));
-          observer.unobserve(entry.target);
+          scrollAnimObserver.unobserve(entry.target);
         }
       });
     },
@@ -308,7 +349,7 @@ function initScrollAnimations() {
       const idx = siblings.indexOf(el);
       el.dataset.delay = String(Math.max(idx, 0) * 90);
     }
-    observer.observe(el);
+    scrollAnimObserver.observe(el);
   });
 }
 

@@ -18,13 +18,23 @@
   <meta name="twitter:description" content="Надёжный автосервис с многолетним опытом. Диагностика, ремонт и обслуживание автомобилей.">
 
   <title>ПОРШЕНЬ — автосервис</title>
-  <script>document.documentElement.classList.add('perf-lite');</script>
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('porshen-fx');
+        var lite = saved === 'off' || (saved !== 'on' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        document.documentElement.classList.add(lite ? 'perf-lite' : 'perf-full');
+      } catch (e) {
+        document.documentElement.classList.add('perf-full');
+      }
+    })();
+  </script>
 
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=11">
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 
@@ -66,6 +76,20 @@
       </nav>
 
       <a href="#contacts" class="btn btn--primary btn--sm site-header__cta">Записаться</a>
+      <button
+        type="button"
+        class="fx-toggle"
+        id="fx-toggle"
+        aria-pressed="true"
+        aria-label="Анимации включены"
+        title="Выключить анимации"
+      >
+        <svg class="fx-toggle__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M12 3l1.45 4.45L18 9l-4.55 1.55L12 15l-1.45-4.45L6 9l4.55-1.55L12 3z"/>
+          <path d="M19 13l.75 2.25L22 16l-2.25.75L19 19l-.75-2.25L16 16l2.25-.75L19 13z"/>
+        </svg>
+        <span class="fx-toggle__label">Анимации</span>
+      </button>
       <a href="#" class="site-header__phone" id="header-phone" aria-label="Позвонить в автосервис"></a>
 
       <button class="burger" type="button" aria-label="Открыть меню" aria-expanded="false">
@@ -358,6 +382,6 @@
   <script src="data/gallery.js?v=5" defer></script>
   <script src="data/form-config.js?v=5" defer></script>
   <script src="data/contacts.js?v=5" defer></script>
-  <script src="script.js?v=16" defer></script>
+  <script src="script.js?v=17" defer></script>
 </body>
 </html>
