@@ -1,3 +1,105 @@
+// ── Scroll manager (single rAF throttle) ───────────────────────────────────
+
+const scrollListeners = [];
+let scrollTicking = false;
+
+function onScroll(callback) {
+  scrollListeners.push(callback);
+}
+
+function initScrollManager() {
+  if (scrollListeners._ready) return;
+  scrollListeners._ready = true;
+
+  window.addEventListener('scroll', () => {
+    if (scrollTicking) return;
+    scrollTicking = true;
+    requestAnimationFrame(() => {
+      scrollListeners.forEach((fn) => fn());
+      scrollTicking = false;
+    });
+  }, { passive: true });
+}
+
+// ── Performance mode ───────────────────────────────────────────────────────
+
+let perfLite = true;
+let perfReadyResolve;
+const perfReady = new Promise((resolve) => {
+  perfReadyResolve = resolve;
+});
+
+function isPerfLite() {
+  return perfLite;
+}
+
+function setPerfMode(lite) {
+  perfLite = lite;
+  document.documentElement.classList.toggle('perf-lite', lite);
+  document.documentElement.classList.toggle('perf-full', !lite);
+}
+
+function initPerformanceMode() {
+  const root = document.documentElement;
+  setPerfMode(true);
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const coarsePointer = window.matchMedia('(hover: none), (pointer: coarse)');
+
+  const hardwareOk = () => {
+    if (reducedMotion.matches || coarsePointer.matches) return false;
+    if (navigator.connection?.saveData) return false;
+
+    const cores = navigator.hardwareConcurrency || 0;
+    const mem = navigator.deviceMemory || 0;
+    if (cores >= 8) return mem === 0 || mem >= 6;
+    if (cores >= 6 && mem >= 8) return true;
+    return false;
+  };
+
+  const evaluate = () => {
+    setPerfMode(!hardwareOk());
+    perfReadyResolve();
+  };
+
+  evaluate();
+  [reducedMotion, coarsePointer].forEach((mq) => {
+    mq.addEventListener('change', evaluate);
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    root.classList.toggle('is-tab-hidden', document.hidden);
+  });
+}
+
+function loadChatWidget() {
+  if (document.querySelector('script[data-bot-id]')) return;
+
+  const script = document.createElement('script');
+  script.src = 'widget.js?v=1';
+  script.dataset.botId = 'client-1';
+  script.dataset.apiUrl = 'https://chat-bot-api-lovat.vercel.app';
+  script.defer = true;
+  document.body.appendChild(script);
+}
+
+function scheduleChatWidget() {
+  if (isPerfLite()) {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(loadChatWidget, { timeout: 5000 });
+    } else {
+      setTimeout(loadChatWidget, 3000);
+    }
+    return;
+  }
+
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(loadChatWidget, { timeout: 2500 });
+  } else {
+    setTimeout(loadChatWidget, 1500);
+  }
+}
+
 // ── Utilities ──────────────────────────────────────────────────────────────
 
 function formatPrice(price, unit) {
@@ -20,12 +122,9 @@ function initHeader() {
   const header = document.querySelector('.site-header');
   if (!header) return;
 
-  const onScroll = () => {
+  onScroll(() => {
     header.classList.toggle('site-header--scrolled', window.scrollY > 20);
-  };
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+  });
 }
 
 function initHeaderPhone() {
@@ -58,8 +157,7 @@ function initActiveNav() {
     linkById[currentId]?.classList.add('site-nav__link--active');
   };
 
-  window.addEventListener('scroll', setActive, { passive: true });
-  setActive();
+  onScroll(setActive);
 }
 
 function initScrollTop() {
@@ -80,7 +178,7 @@ function initScrollTop() {
     if (isScrolling || window.scrollY <= 0) return;
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reducedMotion) {
+    if (reducedMotion || isPerfLite()) {
       window.scrollTo(0, 0);
       return;
     }
@@ -111,7 +209,7 @@ function initScrollTop() {
   };
 
   button.addEventListener('click', scrollToTop);
-  window.addEventListener('scroll', toggle, { passive: true });
+  onScroll(toggle);
   toggle();
 }
 
@@ -170,7 +268,7 @@ function initSmoothScroll() {
       if (!target) return;
 
       e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth' });
+      target.scrollIntoView({ behavior: isPerfLite() ? 'auto' : 'smooth' });
     });
   });
 }
@@ -180,6 +278,11 @@ function initSmoothScroll() {
 function initScrollAnimations() {
   const elements = document.querySelectorAll('.animate-on-scroll');
   if (!elements.length) return;
+
+  if (isPerfLite()) {
+    elements.forEach((el) => el.classList.add('animate-in'));
+    return;
+  }
 
   const observer = new IntersectionObserver(
     (entries) => {
@@ -549,49 +652,31 @@ function initFooter() {
   }
 }
 
-// ── Performance — lite mode for weaker devices ───────────────────────────
-
-function initPerformanceMode() {
-  const root = document.documentElement;
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const coarsePointer = window.matchMedia('(hover: none), (pointer: coarse)');
-  const smallScreen = window.matchMedia('(max-width: 767px)');
-  const lowCpu = navigator.hardwareConcurrency > 0 && navigator.hardwareConcurrency <= 4;
-  const lowMemory = navigator.deviceMemory > 0 && navigator.deviceMemory <= 4;
-
-  const applyLite = () => {
-    const lite = reducedMotion.matches || coarsePointer.matches || smallScreen.matches || lowCpu || lowMemory;
-    root.classList.toggle('perf-lite', lite);
-  };
-
-  applyLite();
-  [reducedMotion, coarsePointer, smallScreen].forEach((mq) => {
-    mq.addEventListener('change', applyLite);
-  });
-
-  document.addEventListener('visibilitychange', () => {
-    root.classList.toggle('is-tab-hidden', document.hidden);
-  });
-}
-
 // ── App init ───────────────────────────────────────────────────────────────
 
 function initApp() {
   if (window.__porshenInitialized) return;
   window.__porshenInitialized = true;
 
+  initPerformanceMode();
+  initScrollManager();
   initHeader();
   initHeaderPhone();
   initActiveNav();
   initMobileMenu();
   initSmoothScroll();
-  initScrollAnimations();
   initScrollTop();
-  initPerformanceMode();
   renderPriceList();
   initGallery();
   initBookingForm();
   initFooter();
+
+  perfReady.then(() => {
+    initScrollAnimations();
+    scheduleChatWidget();
+  });
+
+  scrollListeners.forEach((fn) => fn());
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
